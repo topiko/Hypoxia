@@ -51,7 +51,7 @@ def plot_oxygen_hmap(data, fig, ax):
 
     return ax
 
-def plot_oxygen_hist(datas, ax, nbins=20):
+def plot_oxygen_hist(datas, ax, nbins=50):
 
     # Buiöd histogram of oxygen level in tissue.
     # Each cell in tissue is weighted by its area.
@@ -104,15 +104,15 @@ def plot_K_arr(data, t, params, res_dir, figw=3, figh=4):
 
     ax2 = plot_oxygen_hist(data, ax2)
 
-    title = r'Active Vessels={active_vessels}%, $K_0={K_0}$'.format(**params)
+    title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$'.format(**params) + '\n' \
+            + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
     plt.suptitle(title, fontsize=12)
-
     #plt.tight_layout()
 
     fig.subplots_adjust(hspace=.6)
     plt.gcf().subplots_adjust(right=0.95, left=.22, top=.85)
     #plt.savefig(res_dir + title.replace(' ', '').replace(',', '_').replace('$', '') + '.pdf')
-    plt.savefig(res_dir + title.replace(' ', '').replace(',', '_').replace('$', '').replace('%', '') + '.png', dpi=250)
+    plt.savefig(res_dir + title.replace(' ', '').replace(',', '_').replace('$', '').replace('%', '').replace('\n', '_') + '.png', dpi=250)
     if show: plt.show()
 
 

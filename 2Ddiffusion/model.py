@@ -26,12 +26,12 @@ PATH = '../VesselData/Meshes/'
 print('Running on params:')
 print(vars(args))
 # Model parameters
-# TODO: pixel size would need to be interpreted from vessel array.
-C0      = args.C_0 # 15 #.1
-Km      = args.K_m #1 #.1
+dH_slice = 12e-6 # 12mum [Jakob]
+C0      = args.C_0 # 15
+Km      = args.K_m #1
 K_vessel_surface \
         = args.K_0
-D       = args.D * 1e-12 #2000e-12   #10
+D       = args.D * 1e-12 #* dH_slice #2000e-12
 dt      = 20e-3   # time step
 n_vessel_g = 20 # number of vessel groups used. This comes from the GMSH script make_gmesh_from_file..
 
@@ -39,6 +39,7 @@ if active_vessels%(100/n_vessel_g) != 0:
     raise ValueError('active vessels needs to be {} * x'.format(100/n_vessel_g))
 
 mesh = Mesh()
+
 # Full mesh:
 with XDMFFile(PATH + "mesh_np={}_iz={}.xdmf".format(npixels, layer_idx)) as infile:
     infile.read(mesh)
@@ -57,7 +58,7 @@ V = FunctionSpace(mesh, 'CG', 1)
 
 
 # Define boundary conditions.
-# Vessels are labeld by number 6
+# Vessels are labeld by numbers 10...n_vessel_g - 1
 
 print('Active vessel groups')
 vbc = []
@@ -66,7 +67,7 @@ for vessel_g in np.random.choice(np.arange(10, 10 + n_vessel_g), size=int(active
     vbc.append(DirichletBC(V, Constant(K_vessel_surface), mf, vessel_g))
 
 # Define initial value
-K_n = project(Constant(40), V)
+K_n = project(Constant(K_vessel_surface), V)
 
 # Define variational problem
 K = TrialFunction(V)
@@ -106,13 +107,6 @@ while True:
           len(delta_K), dt)
 
 
-    #if delta_K.max() < .005:
-    #    dt += 10e-3
-    #else:
-    #    dt -= 10e-3
-    #    dt = max(dt_min, 10e-3)
-
-
     # Update previous solution
     K_n.assign(K)
 
@@ -120,12 +114,11 @@ while True:
     if i%500==0:
         print('Time: {:.03f}ms'.format(t*1000))
         #vtkfile << (K, t)
-
         #data = make_K_arr(mesh, K_n, t, res_dir)
 
     if delta_K.max() < terminate:
         make_K_arr(mesh, K_n, terminated_flag, res_dir)
-        print('Terminated at t={:.02f}'.format(t))
+        print('Terminated at t={:.02f}s'.format(t))
         break
 
     i += 1

@@ -1,7 +1,7 @@
 import sys
 import argparse
 
-res_dir = 'Data/diffusion_iz={layer_idx:02d}_np={npixels}_activeV={active_vessels:02d}_K0={K_0:g}_rid={run_idx:03d}/'
+res_dir = 'Data/diffusion_iz={layer_idx:02d}_np={npixels}_activeV={active_vessels:02d}_K0={K_0:g}_D={D:g}_Km={K_m:g}_C0={C_0:g}_rid={run_idx:03d}/'
 terminated_flag = 'fin'
 
 def K_names(t):
