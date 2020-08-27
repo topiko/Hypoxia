@@ -5,6 +5,7 @@ from scipy.misc import imresize
 import numpy as np
 
 path_to_aligned = '../VesselData/AlignedImages/'
+path_to_orig = '../DataOrig/OriginalImages/'
 
 def shift_rotate(angle, shift_x, shift_y, fig_dat):
 
@@ -63,7 +64,7 @@ if __name__ == '__main__':
     rot_shift_dict = {}
 
     fname = '1,{:02d} merge.tif'
-    dat_bot = plt.imread(fname.format(1)).copy()
+    dat_bot = plt.imread(path_to_orig + fname.format(1)).copy()
     # Save the most bottom image
     # Save the new bottom to aligned::
     plt.imsave(path_to_aligned + fname.format(1).replace('tif', 'png'), dat_bot)
@@ -74,6 +75,7 @@ if __name__ == '__main__':
 
         # resize for speedup:
         # TODO: fix to use PIL and its resize instead of scipy.
+        print('Fix here to use PIL resize instead of old scipy!! CRASH!')
         dat_bot_resized = imresize(dat_bot, resize)[:, :, 1:] #Drop the red channel
         dat_top_resized = imresize(dat_top, resize)[:, :, 1:]
 
