@@ -5,7 +5,7 @@ npixels_arr = [100]
 active_vessels_arr = [30, 50, 75, 100]
 K0s = [10, 20, 30, 40, 50]
 Ds = [1500, 2000, 2500]
-rids = [0] #range(10)
+rids = range(5)
 
 for layer_idx in layer_idxs:
     for npixels in npixels_arr:
