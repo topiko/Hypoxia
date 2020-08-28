@@ -2,6 +2,9 @@ import sys
 import argparse
 
 res_dir = 'Data/diffusion_iz={layer_idx:02d}_np={npixels}_activeV={active_vessels:02d}_K0={K_0:g}_D={D:g}_Km={K_m:g}_C0={C_0:g}_rid={run_idx:03d}/'
+
+dose_data = 'Data/D99_doses_layer_idx={layer_idx}_K0={K_0}_D={D}_Km={K_m}_C0={C_0}.npy'
+
 terminated_flag = 'fin'
 
 def K_names(t):

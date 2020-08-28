@@ -12,6 +12,10 @@ from input_utils import res_dir, K_names, get_cmd_args_parser
 test = False
 show = False
 
+error_bar_dict = {'elinewidth':1, 'capsize':2}
+figw = 3
+figh = 5.5
+figure_folder_name = 'Pictures_layer_idx={layer_idx}/' #.format(**params)
 def plot_oxygen_hmap(data, fig, ax):
 
     data[:,1:4] *= 1e6 # convert to mum
@@ -67,15 +71,14 @@ def plot_oxygen_hist(datas, ax, nbins=50):
             cell_data = data[3*i:3*(i+1)]
 
             oxygen[i] = cell_data[:,4].mean()
-            area[i] = cell_data[0, 5]*1e6
+            area[i] = cell_data[0, 5]*1e6 # form m^2 --> mm^2
 
         oxygens[:, n], _ = np.histogram(oxygen, bins=bins, weights=area)
 
-    if (oxygens.sum(axis=0).std() > .00001):
-        raise ValueError('Areas should be equal...')
+    if (oxygens.sum(axis=0).std() > .0001):
+        raise ValueError('Areas should be equal... std={}'.format(oxygens.sum(axis=0).std()))
 
     width = bins[1] - bins[0]
-    error_bar_dict = {'elinewidth':1, 'capsize':2}
     ax.bar(bins[:-1], oxygens.mean(axis=1),
            width=width,
            yerr=oxygens.std(axis=1),
@@ -89,6 +92,14 @@ def plot_oxygen_hist(datas, ax, nbins=50):
     return ax
 
 def plot_K_arr(data, t, params, res_dir, figw=3, figh=4):
+
+    title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$'.format(**params) + '\n' \
+            + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
+
+    fig_name = res_dir + title.replace(' ', '').replace(',', '_').replace('$', '').replace('%', '').replace('\n', '_') + '.png'
+    if os.path.isfile(fig_name):
+        print('Figure already exists. Exiting')
+        return
 
     fig = plt.figure(figsize=(figw, figh)) #, constrained_layout=True))
 
@@ -104,17 +115,35 @@ def plot_K_arr(data, t, params, res_dir, figw=3, figh=4):
 
     ax2 = plot_oxygen_hist(data, ax2)
 
-    title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$'.format(**params) + '\n' \
-            + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
     plt.suptitle(title, fontsize=12)
-    #plt.tight_layout()
 
     fig.subplots_adjust(hspace=.6)
     plt.gcf().subplots_adjust(right=0.95, left=.22, top=.85)
-    #plt.savefig(res_dir + title.replace(' ', '').replace(',', '_').replace('$', '') + '.pdf')
-    plt.savefig(res_dir + title.replace(' ', '').replace(',', '_').replace('$', '').replace('%', '').replace('\n', '_') + '.png', dpi=250)
+    plt.savefig(fig_name, dpi=250)
+
     if show: plt.show()
 
+def plot_D99(save_folder, params, figw=4, figh=3):
+
+    from run_all import active_vessels_arr, K0s
+    from input_utils import dose_data
+
+    fig, ax = plt.subplots(figsize=(figw, figh))
+    for K0 in K0s:
+        params['K_0'] = K0
+        doses_arr = np.load(dose_data.format(**params))
+        ax.errorbar(active_vessels_arr,
+                    doses_arr.mean(axis=1),
+                    yerr=doses_arr.std(axis=1),
+                    label=r'K_0={}'.format(K0),
+                    **error_bar_dict)
+
+    ax.set_xlabel('Active vessels [%]')
+    ax.set_ylabel('Dose [Gy] for D99')
+
+    plt.gcf().subplots_adjust(right=0.95, left=.22, bottom=.20)
+    plt.legend(frameon=False)
+    plt.savefig(save_folder + 'D99.png', dpi=250)
 
 if __name__ == '__main__':
 
@@ -142,9 +171,10 @@ if __name__ == '__main__':
         res_dir_f = res_dir.format(**params)
         datas.append(np.load(res_dir_f + K_names(t)[1]))
 
-    figw = 3
-    figh = 5.5
-    folder_name = 'Pictures_layer_idx={layer_idx}/'.format(**params)
+    folder_name = figure_folder_name.format(**params)
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
+
+
+
     plot_K_arr(datas, t, params, folder_name, figw, figh)
