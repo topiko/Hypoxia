@@ -120,10 +120,6 @@ if __name__ == '__main__':
 
 
     t = 'fin'
-    #argv_list_init = sys.argv[:5]
-    #argv_list = [0]*7
-    #argv_list[1], argv_list[2], argv_list[3], argv_list[4], argv_list[5], res_dir = read_cmd_params(argv_list_init)
-
 
     parser = get_cmd_args_parser()
     args = parser.parse_args()
