@@ -143,7 +143,7 @@ def plot_D99(save_folder, params, figw=4, figh=3):
 
     plt.gcf().subplots_adjust(right=0.95, left=.22, bottom=.20)
     plt.legend(frameon=False)
-    plt.savefig(save_folder + 'D99.png', dpi=250)
+    plt.savefig(save_folder + 'D99_D={D}_Km={K_m}_C0={C_0}.png'.format(**params), dpi=250)
 
 if __name__ == '__main__':
 

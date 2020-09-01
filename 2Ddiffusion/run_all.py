@@ -12,10 +12,10 @@ if __name__ == '__main__':
     for layer_idx in layer_idxs:
         for npixels in npixels_arr:
             for K_m in K_m_arr:
-                for active_vessels in active_vessels_arr:
-                    rids_run = [0] if active_vessels==100 else rids
-                    for K0 in K0s:
-                        for D in Ds:
+                for D in Ds:
+                    for active_vessels in active_vessels_arr:
+                        rids_run = [0] if active_vessels==100 else rids
+                        for K0 in K0s:
                             for rid in rids_run:
                                 params = ['-layer_idx', str(layer_idx),
                                           '-npixels', str(npixels),
@@ -29,4 +29,4 @@ if __name__ == '__main__':
                             print('Plot res:')
                             subprocess.run(['python', 'plot_utils.py'] + params)
 
-                subprocess.run(['python', 'radiation_utils.py'] + params)
+                    subprocess.run(['python', 'radiation_utils.py'] + params)
