@@ -97,7 +97,6 @@ t = 0
 i = 0
 terminate = .0001
 
-
 #for n in range(int(20/dt)):
 while True:
 

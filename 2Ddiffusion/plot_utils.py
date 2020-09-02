@@ -6,7 +6,7 @@ from matplotlib.patches import Polygon
 import matplotlib as mpl
 from matplotlib.collections import PatchCollection
 from mpl_toolkits.axes_grid1 import make_axes_locatable
-from input_utils import res_dir, K_names, get_cmd_args_parser
+from input_utils import res_dir, K_names, get_cmd_args_parser, terminated_flag
 
 
 test = False
@@ -18,13 +18,14 @@ figh = 5.5
 figure_folder_name = 'Pictures_layer_idx={layer_idx}/' #.format(**params)
 def plot_oxygen_hmap(data, fig, ax):
 
-    data[:,1:4] *= 1e6 # convert to mum
+    data_scaled = data.copy()
+    data_scaled[:,1:4] *= 1e6 # convert to mum
     patches = []
     colors = []
     N = 100 if test else 1000000
 
     for i in range(len(data)//3)[:N]:
-        cell_data = data[3*i:3*(i+1)]
+        cell_data = data_scaled[3*i:3*(i+1)]
         tri = Polygon(cell_data[:,1:3])
 
         colors.append(cell_data[:,4].mean())
@@ -47,21 +48,23 @@ def plot_oxygen_hmap(data, fig, ax):
     cbar.ax.xaxis.set_label_position('top')
 
     #fig.colorbar(p, ax=ax)
-    ax.set_xlim([data[:, 1].min(), data[:,1].max()])
-    ax.set_ylim([data[:, 2].min(), data[:,2].max()])
+    ax.set_xlim([data_scaled[:, 1].min(), data_scaled[:,1].max()])
+    ax.set_ylim([data_scaled[:, 2].min(), data_scaled[:,2].max()])
     ax.set_aspect('equal')
     ax.set_xlabel(r'$\mu m$')
     ax.set_ylabel(r'$\mu m$')
 
     return ax
 
-def plot_oxygen_hist(datas, ax, nbins=50):
+def plot_oxygen_hist(datas, params, ax, nbins=50):
 
-    # Buiöd histogram of oxygen level in tissue.
+    # Build histogram of oxygen level in tissue.
     # Each cell in tissue is weighted by its area.
 
-
-    bins = np.linspace(0, 50, nbins+1)
+    if params['layer_idx'] == -1:
+        bins = np.linspace(5, 50, nbins+1)
+    else:
+        bins = np.linspace(0, 50, nbins+1)
     oxygens = np.zeros((nbins, len(datas)))
     for n, data in enumerate(datas):
         N = int(len(data)//3)
@@ -69,17 +72,25 @@ def plot_oxygen_hist(datas, ax, nbins=50):
         oxygen = np.zeros(N)
         for i in range(len(data)//3):
             cell_data = data[3*i:3*(i+1)]
-
             oxygen[i] = cell_data[:,4].mean()
             area[i] = cell_data[0, 5]*1e6 # form m^2 --> mm^2
-
+            #v1 = cell_data[0,1:4]
+            #v2 = cell_data[1,1:4]
+            #v3 = cell_data[2,1:4]
+            #print(v1-v2)
+            #print(v1-v3)
+            #print(area[i] - np.linalg.norm(np.cross((v1-v2), (v1-v3)))/2*1e6)
         oxygens[:, n], _ = np.histogram(oxygen, bins=bins, weights=area)
+
+    print('Areas:')
+    print(oxygens.sum(axis=0))
 
     if (oxygens.sum(axis=0).std() > .0001):
         raise ValueError('Areas should be equal... std={}'.format(oxygens.sum(axis=0).std()))
 
     width = bins[1] - bins[0]
-    ax.bar(bins[:-1], oxygens.mean(axis=1),
+    ax.bar(bins[:-1],
+           oxygens.mean(axis=1),
            width=width,
            yerr=oxygens.std(axis=1),
            align='edge',
@@ -91,7 +102,7 @@ def plot_oxygen_hist(datas, ax, nbins=50):
 
     return ax
 
-def plot_K_arr(data, t, params, res_dir, figw=3, figh=4):
+def plot_K_arr(data, params, res_dir, figw=3, figh=4):
 
     title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$'.format(**params) + '\n' \
             + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
@@ -113,7 +124,7 @@ def plot_K_arr(data, t, params, res_dir, figw=3, figh=4):
         ax1 = plot_oxygen_hmap(data, fig, ax1)
         data = [data]
 
-    ax2 = plot_oxygen_hist(data, ax2)
+    ax2 = plot_oxygen_hist(data, params, ax2)
 
     plt.suptitle(title, fontsize=12)
 
@@ -148,15 +159,15 @@ def plot_D99(save_folder, params, figw=4, figh=3):
 if __name__ == '__main__':
 
 
-    t = 'fin'
-
     parser = get_cmd_args_parser()
     args = parser.parse_args()
 
     params = vars(args)
     res_dir_f = res_dir.format(**params)
 
+    print('Run arguments:')
     print(vars(args))
+
     rids = []
     for entity in os.listdir('Data/'):
         if entity.startswith(res_dir_f.replace('Data/', '').split('_rid')[0]):
@@ -169,7 +180,7 @@ if __name__ == '__main__':
     for run_id in rids:
         params['run_idx'] = run_id
         res_dir_f = res_dir.format(**params)
-        datas.append(np.load(res_dir_f + K_names(t)[1]))
+        datas.append(np.load(res_dir_f + K_names(terminated_flag)[1]))
 
     folder_name = figure_folder_name.format(**params)
     if not os.path.exists(folder_name):
@@ -177,4 +188,4 @@ if __name__ == '__main__':
 
 
 
-    plot_K_arr(datas, t, params, folder_name, figw, figh)
+    plot_K_arr(datas, params, folder_name, figw, figh)
