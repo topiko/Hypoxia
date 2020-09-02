@@ -50,7 +50,7 @@ lc2 = 2e-5
 PATH = '../VesselData/'
 
 if len(sys.argv) > 1:
-    layer_idx = sys.argv[1]
+    layer_idx = int(sys.argv[1])
     npixels = sys.argv[2]
     if len(sys.argv) == 4:
         show = sys.argv[3]
@@ -188,29 +188,39 @@ gmsh.model.geo.addPlaneSurface([p+1, *vessel_tags], p+1)
 # The tags are later used in fenics to define bcs!
 n_vessel_groups = 20
 success = False
-while not success:
-    vessel_line_tags = {i:[] for i in range(n_vessel_groups)}
+if layer_idx >= 0:
+    while not success:
+        vessel_line_tags = {i:[] for i in range(n_vessel_groups)}
+        for vessel in vessel_dict:
+            # Each vessel is randomly allocated to a group:
+            i = np.random.randint(0, n_vessel_groups)
+            vessel_line_tags[i] += vessel_dict[vessel]['line_tags']
+
+        # Check that ech group has at least single vessel if not redo...
+        success = True
+        for i in range(n_vessel_groups):
+            if len(vessel_line_tags[i]) == 0:
+                break
+                success = False
+
+        if not success:
+            continue
+
+        print('passed')
+        for i in range(n_vessel_groups):
+            # Build groups ad tags:
+            vessel_group_idx = 10 + i
+            gmsh.model.addPhysicalGroup(1, vessel_line_tags[i], vessel_group_idx)
+            gmsh.model.setPhysicalName(1, vessel_group_idx, "vessels_{:02d}".format(vessel_group_idx))
+else:
+    vessel_line_tags = []
     for vessel in vessel_dict:
-        # Each vessel is randomly allocated to a group:
-        i = np.random.randint(0, n_vessel_groups)
-        vessel_line_tags[i] += vessel_dict[vessel]['line_tags']
+        vessel_line_tags += vessel_dict[vessel]['line_tags']
 
-    # Check that ech group has at least single vessel if not redo...
-    success = True
-    for i in range(n_vessel_groups):
-        if len(vessel_line_tags[i]) == 0:
-            break
-            success = False
-
-    if not success:
-        continue
-
-    print('passed')
-    for i in range(n_vessel_groups):
-        # Build groups ad tags:
-        vessel_group_idx = 10 + i
-        gmsh.model.addPhysicalGroup(1, vessel_line_tags[i], vessel_group_idx)
-        gmsh.model.setPhysicalName(1, vessel_group_idx, "vessels_{:02d}".format(vessel_group_idx))
+    print('This is supposed for a test run. Vessels are not separated into groups')
+    # Build groups ad tags:
+    gmsh.model.addPhysicalGroup(1, vessel_line_tags, 10)
+    gmsh.model.setPhysicalName(1, 10, "vessels_{:02d}".format(10))
 
 gmsh.model.addPhysicalGroup(1, [1, 2, 3, 4], 5)
 gmsh.model.setPhysicalName(1, 5, "exterior")

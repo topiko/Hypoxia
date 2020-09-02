@@ -33,6 +33,7 @@ K_vessel_surface \
         = args.K_0
 D       = args.D * 1e-12 #* dH_slice #2000e-12
 dt      = 20e-3   # time step
+probLargeK = .3 # 30% of vessels have K_0 = 50
 n_vessel_g = 20 # number of vessel groups used. This comes from the GMSH script make_gmesh_from_file..
 
 if active_vessels%(100/n_vessel_g) != 0:
@@ -62,9 +63,18 @@ V = FunctionSpace(mesh, 'CG', 1)
 
 print('Active vessel groups')
 vbc = []
-for vessel_g in np.random.choice(np.arange(10, 10 + n_vessel_g), size=int(active_vessels/100*n_vessel_g), replace=False):
-    print(vessel_g)
-    vbc.append(DirichletBC(V, Constant(K_vessel_surface), mf, vessel_g))
+if layer_idx >= 0:
+    for vessel_g in np.random.choice(np.arange(10, 10 + n_vessel_g), size=int(active_vessels/100*n_vessel_g), replace=False):
+        if np.random.rand() > (1-probLargeK):
+            K_use = 50
+        else:
+            K_use = K_vessel_surface
+
+        print(vessel_g, K_use)
+        vbc.append(DirichletBC(V, Constant(K_use), mf, vessel_g))
+else:
+    print('Test vessel')
+    vbc.append(DirichletBC(V, Constant(K_vessel_surface), mf, 10))
 
 # Define initial value
 K_n = project(Constant(K_vessel_surface), V)
