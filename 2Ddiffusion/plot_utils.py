@@ -9,8 +9,8 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from input_utils import res_dir, K_names, get_cmd_args_parser, terminated_flag
 
 
-test = False
-show = False
+test = False #True #False
+show = test #False
 
 error_bar_dict = {'elinewidth':1, 'capsize':2}
 figw = 3
@@ -22,7 +22,7 @@ def plot_oxygen_hmap(data, fig, ax):
     data_scaled[:,1:4] *= 1e6 # convert to mum
     patches = []
     colors = []
-    N = 100 if test else 1000000
+    N = 10000 if test else 1000000
 
     for i in range(len(data)//3)[:N]:
         cell_data = data_scaled[3*i:3*(i+1)]
@@ -56,15 +56,46 @@ def plot_oxygen_hmap(data, fig, ax):
 
     return ax
 
+def plot_K_on_diag(datas, ax3):
+
+    def get_K_on_diag_(data):
+        rK = []
+        for i in range(len(data)//3):
+            cell_data = data[3*i:3*(i+1)]
+            v1 = cell_data[0,1:4]
+            v2 = cell_data[1,1:4]
+            v3 = cell_data[2,1:4]
+
+            x = cell_data[:, 1]
+            y = cell_data[:, 2]
+
+            signs = np.sign(x-y)
+            if (1 in signs) and (-1 in signs):
+                # on x==y line
+                x = x.mean()
+                y = y.mean()
+                r = np.sqrt(x**2 + y**2)
+                rK.append([r, cell_data[:,4].mean()])
+
+        rK = np.array(rK)
+        return rK[rK[:,0].argsort(), :]
+
+
+    for data in datas:
+        rK = get_K_on_diag_(data)
+        ax3.plot(rK[:, 0], rK[:,1])
+
+
 def plot_oxygen_hist(datas, params, ax, nbins=50):
 
     # Build histogram of oxygen level in tissue.
     # Each cell in tissue is weighted by its area.
 
     if params['layer_idx'] == -1:
-        bins = np.linspace(5, 50, nbins+1)
+        bins = np.linspace(0, 50, nbins+1)
     else:
         bins = np.linspace(0, 50, nbins+1)
+
     oxygens = np.zeros((nbins, len(datas)))
     for n, data in enumerate(datas):
         N = int(len(data)//3)
@@ -108,15 +139,21 @@ def plot_K_arr(data, params, res_dir, figw=3, figh=4):
             + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
 
     fig_name = res_dir + title.replace(' ', '').replace(',', '_').replace('$', '').replace('%', '').replace('\n', '_') + '.png'
-    if os.path.isfile(fig_name):
+    if os.path.isfile(fig_name) and (not test):
         print('Figure already exists. Exiting')
         return
 
     fig = plt.figure(figsize=(figw, figh)) #, constrained_layout=True))
 
-    gs = fig.add_gridspec(3, 1)
-    ax1 = fig.add_subplot(gs[:2, 0])
-    ax2 = fig.add_subplot(gs[2,0])
+    if params['layer_idx'] != -1:
+        gs = fig.add_gridspec(3, 1)
+        ax1 = fig.add_subplot(gs[:2, 0])
+        ax2 = fig.add_subplot(gs[2,0])
+    else:
+        gs = fig.add_gridspec(4, 1)
+        ax1 = fig.add_subplot(gs[:2, 0])
+        ax2 = fig.add_subplot(gs[2,0])
+        ax3 = fig.add_subplot(gs[3,0])
 
     if isinstance(data, list):
         ax1 = plot_oxygen_hmap(data[0], fig, ax1)
@@ -130,8 +167,14 @@ def plot_K_arr(data, params, res_dir, figw=3, figh=4):
 
     fig.subplots_adjust(hspace=.6)
     plt.gcf().subplots_adjust(right=0.95, left=.22, top=.85)
-    plt.savefig(fig_name, dpi=250)
 
+    if params['layer_idx'] == -1:
+        rKs = plot_K_on_diag(datas, ax3)
+        ax3.semilogy()
+        ax2.semilogy()
+        #ax2.set_xlim([5, 50])# axis()
+
+    plt.savefig(fig_name, dpi=250)
     if show: plt.show()
 
 def plot_D99(save_folder, params, figw=4, figh=3):
