@@ -61,6 +61,8 @@ else:
     layer_idx = 1
     npixels = 100
 
+if layer_idx == -1: lc = 5e-6
+
 print('Generating for layer {}'.format(layer_idx))
 vessel_dict_init = np.load(PATH + 'vessels_dict_np={}_iz={}.npy'.format(npixels,
                                                                         layer_idx),
