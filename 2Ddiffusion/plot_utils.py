@@ -9,7 +9,7 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from input_utils import res_dir, K_names, get_cmd_args_parser, terminated_flag
 
 
-test = False #True #False
+test = False
 show = test #False
 
 error_bar_dict = {'elinewidth':1, 'capsize':2}
@@ -83,8 +83,15 @@ def plot_K_on_diag(datas, ax3):
 
     for data in datas:
         rK = get_K_on_diag_(data)
+        rK = rK[len(rK)//2:]
         ax3.plot(rK[:, 0], rK[:,1])
-
+        idx_max = rK[:, 1].argmax() #[-1]
+        val_max = rK[:, 1].max()
+        ax3.vlines(rK[idx_max, 0], 0, val_max)
+        idx_half = ((rK[:, 1] - rK[idx_max, 1]/2)**2).argmin()
+        ax3.vlines(rK[idx_half, 0], 0, rK[idx_half, 1],
+                   label=r'half dist = {:.3f}\mu m'.format((-rK[idx_max, 0] + rK[idx_half, 0])*1e6))
+        ax3.legend(frameon=False)
 
 def plot_oxygen_hist(datas, params, ax, nbins=50):
 
