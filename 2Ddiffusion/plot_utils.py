@@ -9,10 +9,11 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from input_utils import res_dir, K_names, get_cmd_args_parser, terminated_flag
 
 
-test = True #False
+test = False #True #False
 show = test #False
 
 error_bar_dict = {'elinewidth':1, 'capsize':2}
+show_ste = False
 figw = 3
 figh = 5.5
 figure_folder_name = 'Pictures_layer_idx={layer_idx}/' #.format(**params)
@@ -135,12 +136,15 @@ def plot_oxygen_hist(datas, params, ax, nbins=25):
            align='edge',
            alpha=.7,
            error_kw=error_bar_dict)
-
-    ax.step(bins,
-            np.insert(oxygens[:, 0], 0, oxygens[0, 0]),
-            where='pre',
-            color='red',
-            alpha=.7)
+    if show_step:
+        for i in range(len(datas)):
+            color = 'red' if i == 0 else 'black'
+            ax.step(bins,
+                    np.insert(oxygens[:, i], 0, oxygens[0, i]),
+                    where='pre',
+                    color=color,
+                    lw=1,
+                    alpha=.5)
 
 
     ax.set_xlabel(r'$K$, [$mmHg$]')
@@ -150,11 +154,12 @@ def plot_oxygen_hist(datas, params, ax, nbins=25):
 
 def plot_K_arr(data, params, res_dir, figw=3, figh=4):
 
-    title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$'.format(**params) + '\n' \
-            + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
+    title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$'.format(**params)
+    #+ '\n' \
+    #        + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
 
     fig_name = res_dir + title.replace(' ', '').replace(',', '_').replace('$', '').replace('%', '').replace('\n', '_') + '.png'
-    if os.path.isfile(fig_name) and (not test):
+    if os.path.isfile(fig_name) and False: # and (not test):
         print('Figure already exists. Exiting')
         return
 
@@ -198,22 +203,25 @@ def plot_D99(save_folder, params, figw=4, figh=3):
     from input_utils import dose_data
 
     fig, ax = plt.subplots(figsize=(figw, figh))
-    for K0 in K0s:
+    for K0 in K0s[::2]:
         params['K_0'] = K0
         doses_arr = np.load(dose_data.format(**params))
         ax.errorbar(active_vessels_arr,
                     doses_arr.mean(axis=1),
                     yerr=doses_arr.std(axis=1),
-                    label=r'K_0={}'.format(K0),
+                    label=r'$K_0={}$mmHg'.format(K0),
                     **error_bar_dict)
 
     ax.set_xlabel('Active vessels [%]')
-    ax.set_ylabel('Dose [Gy] for D99')
+    ax.set_ylabel('D99-Dose [Gy]')
 
-    ax.set_title(r'\alpha={:.03f} \beta={:.03f}, {}'.format(params['alpha'], params['beta'], params['oereq']))
+    ax.set_title(r'$\alpha={alpha:.03f} ~ \beta={beta:.03f}$'.format(**params))
     plt.gcf().subplots_adjust(right=0.95, left=.22, bottom=.20)
     plt.legend(frameon=False)
+    plt.tight_layout()
     plt.savefig(save_folder + 'D99_D={D}_Km={K_m}_C0={C_0}_alpha={alpha}_beta={beta}_oereq={oereq}.png'.format(**params), dpi=250)
+
+    plt.show()
 
 if __name__ == '__main__':
 
@@ -222,15 +230,10 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     params = vars(args)
-    #res_dir_f = res_dir.format(**params)
 
     print('Run arguments:')
     print(vars(args))
 
-    #rids = []
-    #for entity in os.listdir('Data/'):
-    #    if entity.startswith(res_dir_f.replace('Data/', '').split('_rid')[0]):
-    #        rids.append(int(entity.split('rid=')[-1]))
 
     datas = []
     for run_id in range(20):

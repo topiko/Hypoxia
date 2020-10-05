@@ -96,5 +96,5 @@ if __name__ == '__main__':
                 np.save(path, doses_arr)
 
 
-        plot_D99(figure_folder_name.format(**params), params, figw, figh=2)
+        plot_D99(figure_folder_name.format(**params), params, figw, figh=3)
 
