@@ -21,6 +21,15 @@ def S(K, dose, alpha=.01, beta=.001, Km=1):
     # Cell survival farction after dose:
     return np.exp(-alpha*OMF(K, alpha, beta, Km)*dose - beta*(OMF(K, alpha, beta, Km)*dose)**2)
 
+def integrate_S(K_arr, dose, alpha, beta, Km):
+
+    total_area = K_arr[:, 1].sum()
+    dS_frac = np.zeros(len(K_arr))
+    for j in range(len(K_arr)):
+        dS_frac[j] = S(K_arr[j, 0], dose, alpha=alpha, beta=beta, Km=Km)*K_arr[j, 1]/total_area
+
+    print('Dose: {} --> Surv frac: {}'.format(dose, dS_frac.sum()))
+    return dS_frac.sum()
 
 def get_D99_dose(data, alpha, beta, Km):
     # Get dose [Gy] required for 99 cell destruction:
@@ -31,18 +40,20 @@ def get_D99_dose(data, alpha, beta, Km):
         K_arr[i,0] = cell_data[:,4].mean()
         K_arr[i,1] = cell_data[0,5]
 
-    total_area = K_arr[:, 1].sum()
-
-    dS_frac = np.zeros(len(K_arr))
+    #total_area = K_arr[:, 1].sum()
+    #dS_frac = np.zeros(len(K_arr))
 
     def get_S_diff(dose):
-        for j in range(len(K_arr)):
-            dS_frac[j] = S(K_arr[j, 0], dose, alpha=alpha, beta=beta, Km=Km)*K_arr[j, 1]/total_area
 
-        print('Dose: {} --> Surv frac: {}'.format(dose, dS_frac.sum()))
-        return (dS_frac.sum()-0.01)**2
+        intS = integrate_S(K_arr, dose, alpha, beta, Km)
+        #for j in range(len(K_arr)):
+        #    dS_frac[j] = S(K_arr[j, 0], dose, alpha=alpha, beta=beta, Km=Km)*K_arr[j, 1]/total_area
 
-    dose = fmin(get_S_diff, 40, ftol=.001, xtol=.1)[0] #, args=(), x
+        #print('Dose: {} --> Surv frac: {}'.format(dose, dS_frac.sum()))
+        return (intS-0.01)**2
+
+    dose = fmin(get_S_diff, 10, ftol=.0001, xtol=.01)[0] #, args=(), x
+
     return dose
 
 if __name__ == '__main__':
