@@ -13,7 +13,7 @@ test = False #True #False
 show = test #False
 
 error_bar_dict = {'elinewidth':1, 'capsize':2}
-show_step = False
+show_step = 'first' #False
 figw = 3
 figh = 5.5
 figure_folder_name = 'Pictures_layer_idx={layer_idx}/' #.format(**params)
@@ -139,12 +139,13 @@ def plot_oxygen_hist(datas, params, ax, nbins=25):
     if show_step:
         for i in range(len(datas)):
             color = 'red' if i == 0 else 'black'
-            ax.step(bins,
-                    np.insert(oxygens[:, i], 0, oxygens[0, i]),
-                    where='pre',
-                    color=color,
-                    lw=1,
-                    alpha=.5)
+            if (show_step == 'full') or (i == 0):
+                ax.step(bins,
+                        np.insert(oxygens[:, i], 0, oxygens[0, i]),
+                        where='pre',
+                        color=color,
+                        lw=1,
+                        alpha=.5)
 
 
     ax.set_xlabel(r'$K$, [$mmHg$]')
