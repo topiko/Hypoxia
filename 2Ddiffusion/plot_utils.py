@@ -13,7 +13,7 @@ test = False #True #False
 show = test #False
 
 error_bar_dict = {'elinewidth':1, 'capsize':2}
-show_step = 'first' #False
+show_step = 'first' # 'full' False
 figw = 3
 figh = 5.5
 figure_folder_name = 'Pictures_layer_idx={layer_idx}/' #.format(**params)
@@ -242,8 +242,10 @@ if __name__ == '__main__':
         #for layer_idx in range(12):
         #params['layer_idx'] = layer_idx
         res_dir_f = res_dir.format(**params)
+
         try:
-            datas.append(np.load(res_dir_f + K_names(terminated_flag)[1]))
+            print(np.load(res_dir_f + K_names(terminated_flag)[1]))
+            #datas.append(np.load(res_dir_f + K_names(terminated_flag)[1]))
         except FileNotFoundError:
             pass
 
