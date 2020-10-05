@@ -9,13 +9,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from input_utils import res_dir, K_names, get_cmd_args_parser, terminated_flag
 
 
-test = False
+test = True #False
 show = test #False
 
 error_bar_dict = {'elinewidth':1, 'capsize':2}
 figw = 3
 figh = 5.5
 figure_folder_name = 'Pictures_layer_idx={layer_idx}/' #.format(**params)
+
 def plot_oxygen_hmap(data, fig, ax):
 
     data_scaled = data.copy()
@@ -93,7 +94,7 @@ def plot_K_on_diag(datas, ax3):
                    label=r'half dist = {:.3f}\mu m'.format((-rK[idx_max, 0] + rK[idx_half, 0])*1e6))
         ax3.legend(frameon=False)
 
-def plot_oxygen_hist(datas, params, ax, nbins=50):
+def plot_oxygen_hist(datas, params, ax, nbins=25):
 
     # Build histogram of oxygen level in tissue.
     # Each cell in tissue is weighted by its area.
@@ -134,6 +135,13 @@ def plot_oxygen_hist(datas, params, ax, nbins=50):
            align='edge',
            alpha=.7,
            error_kw=error_bar_dict)
+
+    ax.step(bins,
+            np.insert(oxygens[:, 0], 0, oxygens[0, 0]),
+            where='pre',
+            color='red',
+            alpha=.7)
+
 
     ax.set_xlabel(r'$K$, [$mmHg$]')
     ax.set_ylabel(r'Area, [$mm^2$]')
@@ -213,24 +221,30 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     params = vars(args)
-    res_dir_f = res_dir.format(**params)
+    #res_dir_f = res_dir.format(**params)
 
     print('Run arguments:')
     print(vars(args))
 
-    rids = []
-    for entity in os.listdir('Data/'):
-        if entity.startswith(res_dir_f.replace('Data/', '').split('_rid')[0]):
-            rids.append(int(entity.split('rid=')[-1]))
-
-    if len(rids) == 0:
-        raise FileNotFoundError('Not a single run found.')
+    #rids = []
+    #for entity in os.listdir('Data/'):
+    #    if entity.startswith(res_dir_f.replace('Data/', '').split('_rid')[0]):
+    #        rids.append(int(entity.split('rid=')[-1]))
 
     datas = []
-    for run_id in rids:
+    for run_id in range(20):
         params['run_idx'] = run_id
+        #for layer_idx in range(12):
+        #params['layer_idx'] = layer_idx
         res_dir_f = res_dir.format(**params)
-        datas.append(np.load(res_dir_f + K_names(terminated_flag)[1]))
+        try:
+            datas.append(np.load(res_dir_f + K_names(terminated_flag)[1]))
+        except FileNotFoundError:
+            pass
+
+    if len(datas) == 0:
+        raise FileNotFoundError('Not a single run found.')
+
 
     folder_name = figure_folder_name.format(**params)
     if not os.path.exists(folder_name):
