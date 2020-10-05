@@ -13,7 +13,7 @@ test = False #True #False
 show = test #False
 
 error_bar_dict = {'elinewidth':1, 'capsize':2}
-show_ste = False
+show_step = False
 figw = 3
 figh = 5.5
 figure_folder_name = 'Pictures_layer_idx={layer_idx}/' #.format(**params)
