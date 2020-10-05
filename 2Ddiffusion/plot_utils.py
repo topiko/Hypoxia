@@ -154,7 +154,7 @@ def plot_oxygen_hist(datas, params, ax, nbins=25):
 
 def plot_K_arr(data, params, res_dir, figw=3, figh=4):
 
-    title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$'.format(**params)
+    title = r'Active Vessels={active_vessels}%, $K_0={K_0:g}$ $K_m={K_m:g}$'.format(**params)
     #+ '\n' \
     #        + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
 
