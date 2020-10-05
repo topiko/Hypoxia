@@ -3,7 +3,7 @@ import argparse
 
 res_dir = 'Data/diffusion_iz={layer_idx:02d}_np={npixels}_activeV={active_vessels:02d}_K0={K_0:g}_D={D:g}_Km={K_m:g}_C0={C_0:g}_rid={run_idx:03d}/'
 
-dose_data = 'Data/D99_doses_layer_idx={layer_idx}_K0={K_0}_D={D}_Km={K_m}_C0={C_0}.npy'
+dose_data = 'Data/D99_doses_layer_idx={layer_idx}_K0={K_0}_D={D}_Km={K_m}_C0={C_0}_alpha={alpha}_beta={beta}_eq={oereq}.npy'
 
 terminated_flag = 'fin'
 
@@ -34,5 +34,8 @@ def get_cmd_args_parser():
     parser.add_argument('-K_m', type=float, default=1)
     parser.add_argument('-C_0', type=float, default=15)
     parser.add_argument('-run_idx', type=int, default=0)
+    parser.add_argument('-alpha', type=float, default=0.3)
+    parser.add_argument('-beta', type=float, default=0.03)
+    parser.add_argument('-oereq', type=str, default='powathil')
 
     return parser

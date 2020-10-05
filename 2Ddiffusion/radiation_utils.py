@@ -64,14 +64,15 @@ if __name__ == '__main__':
         params = vars(args)
         res_dir_f = res_dir.format(**params)
         Km = params['K_m']
-        alpha = .3 # Powathil 2012 /see ../Refs/Powathil2012
-        beta = .03 # Powathil 2012
+        alpha = params['alpha']  # Powathil 2012 /see ../Refs/Powathil2012
+        beta = params['beta'] #.03 # Powathil 2012
+        oereq = params['oereq']
 
         for K0 in K0s:
 
             params['K_0'] = K0
+            path = dose_data.format(**params) #, alpha=alpha, beta=beta, oereq='powathil')
             try:
-                path = dose_data.format(**params)
                 np.load(path)
                 print('Found data in: {}'.format(path))
             except FileNotFoundError:
@@ -92,8 +93,7 @@ if __name__ == '__main__':
                         doses[j:] = get_D99_dose(data, alpha, beta, Km)
                     doses_arr[i, :] = doses
 
-
-                np.save(dose_data.format(**params), doses_arr)
+                np.save(path, doses_arr)
 
 
         plot_D99(figure_folder_name.format(**params), params, figw, figh=2)

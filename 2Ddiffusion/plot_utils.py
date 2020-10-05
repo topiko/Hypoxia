@@ -210,9 +210,10 @@ def plot_D99(save_folder, params, figw=4, figh=3):
     ax.set_xlabel('Active vessels [%]')
     ax.set_ylabel('Dose [Gy] for D99')
 
+    ax.set_title(r'\alpha={:.03f} \beta={:.03f}, {}'.format(params['alpha'], params['beta'], params['oereq']))
     plt.gcf().subplots_adjust(right=0.95, left=.22, bottom=.20)
     plt.legend(frameon=False)
-    plt.savefig(save_folder + 'D99_D={D}_Km={K_m}_C0={C_0}.png'.format(**params), dpi=250)
+    plt.savefig(save_folder + 'D99_D={D}_Km={K_m}_C0={C_0}_alpha={alpha}_beta={beta}_oereq={oereq}.png'.format(**params), dpi=250)
 
 if __name__ == '__main__':
 
