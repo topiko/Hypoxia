@@ -244,8 +244,7 @@ if __name__ == '__main__':
         res_dir_f = res_dir.format(**params)
 
         try:
-            print(np.load(res_dir_f + K_names(terminated_flag)[1]))
-            #datas.append(np.load(res_dir_f + K_names(terminated_flag)[1]))
+            datas.append(np.load(res_dir_f + K_names(terminated_flag)[1]))
         except FileNotFoundError:
             pass
 
