@@ -36,6 +36,7 @@ def get_cmd_args_parser():
     parser.add_argument('-run_idx', type=int, default=0)
     parser.add_argument('-alpha', type=float, default=0.3)
     parser.add_argument('-beta', type=float, default=0.03)
+    parser.add_argument('-K_rm', type=float, default=3)
     parser.add_argument('-oereq', type=str, default='powathil')
 
     return parser
