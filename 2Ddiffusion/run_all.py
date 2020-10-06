@@ -1,12 +1,12 @@
 import subprocess
 
-layer_idxs = [3, 4] #,4,5,7,9,10]
+layer_idxs = [3] #,4,5,7,9,10]
 npixels_arr = [100]
 active_vessels_arr = [15, 30, 50, 75, 100]
 K0s = [10, 20, 30, 40, 50]
-K_m_arr = [1,2,3]
-Ds = [1500, 2000, 2500]
-rids = range(5)
+K_m_arr = [1, 3] #1
+Ds = [2000]
+rids = range(10)
 
 if __name__ == '__main__':
     for layer_idx in layer_idxs:
