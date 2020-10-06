@@ -160,7 +160,7 @@ def plot_K_arr(data, params, res_dir, figw=3, figh=4):
     #        + '$D={D:g}$, $C_0={C_0:g}$, $K_m={K_m:g}$'.format(**params)
 
     fig_name = res_dir + title.replace(' ', '').replace(',', '_').replace('$', '').replace('%', '').replace('\n', '_') + '.png'
-    if os.path.isfile(fig_name) and False: # and (not test):
+    if os.path.isfile(fig_name) and (not test):
         print('Figure already exists. Exiting')
         return
 
