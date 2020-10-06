@@ -216,7 +216,7 @@ def plot_D99(save_folder, params, figw=4, figh=3):
     ax.set_xlabel('Active vessels [%]')
     ax.set_ylabel('D99-Dose [Gy]')
 
-    ax.set_title(r'$\alpha={alpha:.03f} ~ \beta={beta:.03f} ~ K_{rm}={K_rm:.1f}$'.format(**params))
+    ax.set_title(r'$\alpha={alpha:.03f} ~ \beta={beta:.03f} ~ K_{{rm}}={K_rm:.1f}$'.format(**params))
     plt.gcf().subplots_adjust(right=0.95, left=.22, bottom=.20)
     plt.legend(frameon=False)
     plt.tight_layout()
